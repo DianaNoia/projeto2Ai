@@ -297,6 +297,7 @@ GameObject:
   - component: {fileID: 617695836}
   - component: {fileID: 617695837}
   - component: {fileID: 617695838}
+  - component: {fileID: 617695840}
   m_Layer: 0
   m_Name: SessionConfiguration
   m_TagString: Untagged
@@ -316,8 +317,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 505a1c9a208273b9c9f96cff93c38eb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  matchPrefab: {fileID: 8785714994902384369, guid: b0d030fed5862354c9cc5f6a3f15b292,
-    type: 3}
   rows: 7
   cols: 7
   winSequence: 4
@@ -325,6 +324,12 @@ MonoBehaviour:
   squarePiecesPerPlayer: 11
   aITimeLimit: 0.5
   minAIGameMoveTime: 0.25
+  pointsPerWin: 3
+  pointsPerDraw: 1
+  pointsPerLoss: 0
+  pressButtonBeforeMatch: 0
+  pressButtonAfterMatch: 0
+  noMatchScreenDuration: 1.5
 --- !u!4 &617695835
 Transform:
   m_ObjectHideFlags: 0
@@ -390,7 +395,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b143fee73cc82072cb94631d4fb11395, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nonBlockingScreenDuration: 1
+--- !u!114 &617695840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 617695833}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26dffe9a8a4fb964e8cc615c7b8b6896, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isActive: 1
 --- !u!1 &1037412112
 GameObject:
   m_ObjectHideFlags: 0
