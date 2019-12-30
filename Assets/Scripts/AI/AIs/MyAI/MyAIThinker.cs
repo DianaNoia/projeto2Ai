@@ -6,30 +6,34 @@ using UnityEngine;
 public class MyAIThinker : IThinker
 {
     private int lastCol = -1;
-    private int bestCol;
-    private int roundPiece;
-    private int squarePiece;
 
-    private List<int> col;
-    private int row;
+    private List<int> col = new List<int>();
 
     private bool hasWinCorridors;
+
+    private System.Random random;
 
     public FutureMove Think(Board board, CancellationToken ct)
     {
         // The move to perform
         FutureMove move;
 
+        random = new System.Random();
+
+        //This method is not working
+        Check(board);
+
+        // Check how many pieces current player has
+        int roundPieces = board.PieceCount(board.Turn, PShape.Round);
+        int squarePieces = board.PieceCount(board.Turn, PShape.Square);
+        PShape shape = squarePieces < roundPieces ? PShape.Round : PShape.Square;
+
         foreach (IEnumerable winCorridors in board.winCorridors)
         {
             foreach (Pos pos in winCorridors)
             {
-                if(pos.col == null)
-                {
-                    col.Add(pos.col);
-                    hasWinCorridors = true;
-                }
-                
+                col.Add(pos.col);
+                hasWinCorridors = true;
             }
         }
 
@@ -45,35 +49,19 @@ public class MyAIThinker : IThinker
                 if (ct.IsCancellationRequested) return FutureMove.NoMove;
             }
             while (board.IsColumnFull(lastCol));
-        }
-
-        
-
-        /*for (int i = 0; i >= board.cols; i++)
-        {
-            bool isCollumFull = board.IsColumnFull(i);
-
-            if (i == 0 && !isCollumFull)
-            {
-                bestCol = i;
-            }
-            else if (!isCollumFull)
-            {
-
-            }
-        }*/
+        }    
 
         if (hasWinCorridors)
         {
             
             if (board.PieceCount(board.Turn, PShape.Square) > 0)
             {
-                move = new FutureMove(col[Random.Range(0, col.Count)], PShape.Square);
+                move = new FutureMove(col[random.Next(0, col.Count)], shape);
             }
             // If there's no round pieces left, let's try a square pieces
             else if (board.PieceCount(board.Turn, PShape.Round) > 0)
             {
-                move = new FutureMove(col[Random.Range(0, col.Count)], PShape.Round);
+                move = new FutureMove(col[random.Next(0, col.Count)], shape);
             }
             // Otherwise return a "no move" (this should never happen)
             else
@@ -87,23 +75,42 @@ public class MyAIThinker : IThinker
             // Try to use a round piece first
             if (board.PieceCount(board.Turn, PShape.Square) > 0)
             {
-                move = new FutureMove(lastCol, PShape.Square);
+                move = new FutureMove(lastCol, shape);
             }
             // If there's no round pieces left, let's try a square pieces
             else if (board.PieceCount(board.Turn, PShape.Round) > 0)
             {
-                move = new FutureMove(lastCol, PShape.Round);
+                move = new FutureMove(lastCol, shape);
             }
             // Otherwise return a "no move" (this should never happen)
             else
             {
                 move = FutureMove.NoMove;
             }
-        }
-
-        
+        }       
 
         // Return move
         return move;
     }
+
+    private void Check(Board board)
+    {
+        Piece piece;
+
+        for(int i = 0; i >= board.rows; i++)
+        {
+            for(int z = 0; i >= board.cols; z++)
+            {
+                if(board[i,z] != null)
+                {
+                    piece = (Piece)board[i, z];
+                    if(piece.color == board.Turn)
+                    {
+                        Debug.Log($"Found one of my Pieces at {i} | {z}");
+                    }
+                }
+            }
+        }
+    }
+
 }
