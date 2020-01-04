@@ -66,12 +66,12 @@
     <Compile Include="Assets\Scripts\AI\AIPlayer.cs" />
     <Compile Include="Assets\Scripts\AI\AIs\LoserSleeperAI\LoserSleeperAI.cs" />
     <Compile Include="Assets\Scripts\AI\AIs\LoserSleeperAI\LoserSleeperAIThinker.cs" />
-    <Compile Include="Assets\Scripts\AI\AIs\MyAI\MyAI.cs" />
-    <Compile Include="Assets\Scripts\AI\AIs\MyAI\MyAIThinker.cs" />
     <Compile Include="Assets\Scripts\AI\AIs\RandomAI\RandomAI.cs" />
     <Compile Include="Assets\Scripts\AI\AIs\RandomAI\RandomAIThinker.cs" />
     <Compile Include="Assets\Scripts\AI\AIs\SequentialAI\SequentialAI.cs" />
     <Compile Include="Assets\Scripts\AI\AIs\SequentialAI\SequentialAIThinker.cs" />
+    <Compile Include="Assets\Scripts\AI\AIs\ShootergameAI\ShootergameAI.cs" />
+    <Compile Include="Assets\Scripts\AI\AIs\ShootergameAI\ShootergameAIThinker.cs" />
     <Compile Include="Assets\Scripts\AI\IThinker.cs" />
     <Compile Include="Assets\Scripts\BoardGame\Board.cs" />
     <Compile Include="Assets\Scripts\BoardGame\Move.cs" />
@@ -82,6 +82,7 @@
     <Compile Include="Assets\Scripts\BoardGame\Winner.cs" />
     <Compile Include="Assets\Scripts\BoardGame\WinnerExtensions.cs" />
     <Compile Include="Assets\Scripts\FutureMove.cs" />
+    <Compile Include="Assets\Scripts\HumanMoveButton.cs" />
     <Compile Include="Assets\Scripts\HumanPlayer.cs" />
     <Compile Include="Assets\Scripts\IMatchDataProvider.cs" />
     <Compile Include="Assets\Scripts\IPlayer.cs" />
@@ -92,8 +93,6 @@
     <Compile Include="Assets\Scripts\SessionController.cs" />
     <Compile Include="Assets\Scripts\SessionStatus.cs" />
     <Compile Include="Assets\Scripts\SessionView.cs" />
-    <Compile Include="Assets\Scripts\UIArrow.cs" />
-    <Compile Include="Assets\Scripts\WhoIsThinking.cs" />
     <Reference Include="Unity.Timeline.Editor">
       <HintPath>C:/Users/Diogo Maia/Desktop/projeto2Ai/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
     </Reference>

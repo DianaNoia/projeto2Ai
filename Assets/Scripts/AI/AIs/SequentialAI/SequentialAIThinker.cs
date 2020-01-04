@@ -1,17 +1,24 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- *
- * Author: Nuno Fachada
- * */
+/// @file
+/// @brief This file contains the ::SequentialAIThinker class.
+///
+/// @author Nuno Fachada
+/// @date 2019
+/// @copyright [MPLv2](http://mozilla.org/MPL/2.0/)
 
-using UnityEngine;
 using System.Threading;
 
+/// <summary>
+/// Implementation of an AI that will always play in sequence, from the first
+/// to the last column. It will start by spending all round pieces, and only
+/// then start using the square pieces.
+/// </summary>
 public class SequentialAIThinker : IThinker
 {
+    // Last column played
     private int lastCol = -1;
 
+    /// @copydoc IThinker.Think
+    /// <seealso cref="IThinker.Think"/>
     public FutureMove Think(Board board, CancellationToken ct)
     {
         // The move to perform

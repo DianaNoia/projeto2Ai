@@ -1,20 +1,35 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- *
- * Author: Nuno Fachada
- * */
+/// @file
+/// @brief This file contains the ::LoserSleeperAI class.
+///
+/// @author Nuno Fachada
+/// @date 2019
+/// @copyright [MPLv2](http://mozilla.org/MPL/2.0/)
 
+/// <summary>
+/// Configuration class for the <see cref="LoserSleeperAIThinker"/>.
+/// </summary>
 public class LoserSleeperAI : AIPlayer
 {
+    /// <summary>The player's name.</summary>
+    /// <value>The string "LoserSleeperAI".</value>
+    /// <seealso cref="AIPlayer.PlayerName"/>
     public override string PlayerName => "LoserSleeperAI";
+
+    /// <summary>The player's thinker.</summary>
+    /// <value>An instance of <see cref="LoserSleeperAIThinker"/>.</value>
+    /// <seealso cref="AIPlayer.Thinker"/>
     public override IThinker Thinker => thinker;
 
+    // Suport variable for LoserSleeperAI's thinker instance
     private IThinker thinker;
-    protected override void Awake()
+
+    /// <summary>
+    /// This method will be called before a match starts and is used for
+    /// instantiating a new <see cref="LoserSleeperAIThinker"/>.
+    /// </summary>
+    /// <seealso cref="AIPlayer.Setup"/>
+    public override void Setup()
     {
-        base.Awake();
         thinker = new LoserSleeperAIThinker();
     }
-
 }

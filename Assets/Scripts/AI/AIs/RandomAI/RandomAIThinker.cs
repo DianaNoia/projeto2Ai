@@ -1,22 +1,31 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- *
- * Author: Nuno Fachada
- * */
+/// @file
+/// @brief This file contains the ::RandomAIThinker class.
+///
+/// @author Nuno Fachada
+/// @date 2019
+/// @copyright [MPLv2](http://mozilla.org/MPL/2.0/)
 
 using System;
 using System.Threading;
 
+/// <summary>
+/// Implementation of an AI that will play randomly.
+/// </summary>
 public class RandomAIThinker : IThinker
 {
+    // A random number generator instance
     private Random random;
 
+    /// <summary>
+    /// Create a new instance of RandomIAThinker.
+    /// </summary>
     public RandomAIThinker()
     {
         random = new Random();
     }
 
+    /// @copydoc IThinker.Think
+    /// <seealso cref="IThinker.Think"/>
     public FutureMove Think(Board board, CancellationToken ct)
     {
         // Check how many pieces current player has

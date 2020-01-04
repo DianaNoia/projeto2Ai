@@ -322,14 +322,15 @@ MonoBehaviour:
   winSequence: 4
   roundPiecesPerPlayer: 10
   squarePiecesPerPlayer: 11
-  aITimeLimit: 0.5
-  minAIGameMoveTime: 0.25
+  lastMoveAnimLength: 1
+  aITimeLimit: 0.2
+  minAIGameMoveTime: 0.5
   pointsPerWin: 3
   pointsPerDraw: 1
   pointsPerLoss: 0
   pressButtonBeforeMatch: 0
   pressButtonAfterMatch: 0
-  noMatchScreenDuration: 1.5
+  unblockedScreenDuration: 1.5
 --- !u!4 &617695835
 Transform:
   m_ObjectHideFlags: 0
@@ -351,7 +352,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 617695833}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 52622cd336e3e0ab69d66e893d84bd1f, type: 3}
   m_Name: 
@@ -382,7 +383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af4d4e13f7b2fd18dace3aa6c650000e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isActive: 1
+  isActive: 0
 --- !u!114 &617695839
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -404,7 +405,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 617695833}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26dffe9a8a4fb964e8cc615c7b8b6896, type: 3}
+  m_Script: {fileID: 11500000, guid: a06d668fb09aae84698896bf01171d8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   isActive: 1

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
-public class MyAIThinker : IThinker
+public class ShootergameAIThinker : IThinker
 {
     private int lastCol = -1;
 
@@ -25,8 +25,18 @@ public class MyAIThinker : IThinker
         test = Play(board);
         if (test != null)
         {
+            Debug.LogWarning("WON VIA SCRIPT");
             return (FutureMove)test;
         }
+        /*for (int x = 0; x < board.cols; x++)
+        {
+            test = CheckColsShape(board, x);
+        }
+        if (test != null)
+        {
+            Debug.LogWarning("WON VIA SCRIPT");
+            return (FutureMove)test;
+        }*/
 
         random = new System.Random();
 
@@ -56,11 +66,11 @@ public class MyAIThinker : IThinker
                 if (ct.IsCancellationRequested) return FutureMove.NoMove;
             }
             while (board.IsColumnFull(lastCol));
-        }    
+        }
 
         if (hasWinCorridors)
         {
-            
+
             if (board.PieceCount(board.Turn, PShape.Square) > 0)
             {
                 move = new FutureMove(col[random.Next(0, col.Count)], shape);
@@ -108,20 +118,20 @@ public class MyAIThinker : IThinker
         Pos pos;
         bool hasPiece;
 
-        for(int i = 0; i < board.rows ; i++)
+        for (int i = 0; i < board.rows; i++)
         {
-            for(int z = 0; z < board.cols; z++)
+            for (int z = 0; z < board.cols; z++)
             {
-                if(board[i,z] != null)
+                if (board[i, z] != null)
                 {
                     hasPiece = false;
-                    piece = (Piece)board[i,z];
+                    piece = (Piece)board[i, z];
                     pos = new Pos(i, z);
                     if (piece.color == board.Turn)
                     {
-                        foreach(Pos position in myPiece)
+                        foreach (Pos position in myPiece)
                         {
-                            if(position.col == pos.col && position.row == pos.row)
+                            if (position.col == pos.col && position.row == pos.row)
                             {
                                 hasPiece = true;
                             }
@@ -131,8 +141,9 @@ public class MyAIThinker : IThinker
                         {
                             myPiece.Add(pos);
                         }
-                        
-                    }else if(piece.color != board.Turn)
+
+                    }
+                    else if (piece.color != board.Turn)
                     {
                         foreach (Pos position in enemyPiece)
                         {
@@ -154,23 +165,38 @@ public class MyAIThinker : IThinker
 
     private FutureMove? Play(Board board)
     {
-        FutureMove? move = default;
+        FutureMove? move = null;
         int[] rows = new int[board.rows * board.cols];
         int[] cols = new int[board.rows * board.cols];
         int i = 0;
 
-        foreach(Pos pos in myPiece)
-        {            
+        foreach (Pos pos in myPiece)
+        {
             rows.SetValue(pos.row, i);
             cols.SetValue(pos.col, i);
             i++;
 
         }
 
-        for(int x = 0; x < board.cols; x++)
+        for (int x = 0; x < board.cols; x++)
         {
-            move = CheckCols(board, x);
+            return CheckCols(board, x);
         }
+
+        if(move == null)
+        {
+            for (int x = 0; x < board.cols; x++)
+            {
+                return CheckColsShape(board, x);
+            }
+        }
+        /*if(move == null)
+        {
+            for (int x = board.rows - 1; x > 0; x--)
+            {
+                move = CheckRows(board, x);
+            }
+        }*/
 
         return move;
 
@@ -178,31 +204,130 @@ public class MyAIThinker : IThinker
 
     private FutureMove? CheckCols(Board board, int col)
     {
-        FutureMove move;
+        FutureMove? move;
         List<bool> threeInLine = new List<bool>(3);
-        Piece piece;  
+        Piece piece;
 
         for (int i = 0; i < board.rows; i++)
         {
-            if(board[i, col] == null && !(threeInLine.Count == 3))
+            if (board[i, col] == null && threeInLine.Count != 3)
             {
                 return null;
-            }else if (board[i, col] == null && (threeInLine.Count == 3))
+            }
+            else if (board[i, col] == null && (threeInLine.Count == 3))
             {
                 return move = new FutureMove(col, PShape.Round);
             }
             piece = (Piece)board[i, col];
-            if(piece.color == board.Turn)
+            if (piece.color == board.Turn)
             {
                 threeInLine.Add(true);
             }
             else
             {
                 threeInLine.RemoveRange(0, threeInLine.Count);
-            }            
+            }
         }
+
+        return move = null;
+    }
+
+    private FutureMove? CheckColsShape(Board board, int col)
+    {
+        FutureMove? move;
+        List<bool> threeInLine = new List<bool>();
+        Piece piece;
+        PColor color = board.Turn;
+        PShape shape;
+
+        if (color == PColor.White)
+        {
+            shape = PShape.Round;
+        }
+        else
+        {
+            shape = PShape.Square;
+        }
+        
+
+        for (int i = 0; i < board.rows; i++)
+        {
+            Debug.LogWarning($"3 IN LINE COUNT {threeInLine.Count}");
+            if (board[i, col] == null && threeInLine.Count != 3)
+            {
+                return null;
+            }
+            else if (board[i, col] == null && (threeInLine.Count == 3))
+            {
+                Debug.LogWarning("RETURNED");
+                return move = new FutureMove(col, shape);
+            }
+            piece = (Piece)board[i, col];
+            if (piece.shape == shape)
+            {
+                threeInLine.Add(true);
+            }
+            else
+            {
+                threeInLine.RemoveRange(0, threeInLine.Count);
+            } 
+            if(threeInLine.Count == 3)
+            {
+                Debug.LogWarning("RETURNED");
+                return move = new FutureMove(col, shape);
+            }
+        }
+
+        return move = null;
+    }
+
+    private FutureMove? CheckRows(Board board, int row)
+    {
+        FutureMove? move = null;
+        List<byte> threeInLine = new List<byte>();
+        Piece piece;
+
+        for (int i = 0; i < board.cols; i++)
+        {
+            if (board[row, i] == null)
+            {
+                threeInLine.Add(0);
+            }
+            else
+            {
+                piece = (Piece)board[row, i];
+                if (piece.color == board.Turn)
+                {
+                    threeInLine.Add(2);
+                }
+                else
+                {
+                    threeInLine.Add(1);
+                }
+            }
+        }
+
+        for (int i = 0; i < threeInLine.Count - 2; i++)
+        {
+            if (threeInLine[i] == 2 && threeInLine[i + 1] == 2 &&
+                (threeInLine[i + 2] == 2 || threeInLine[i + 2] == 0))
+            {
+                return move = new FutureMove(i, PShape.Round);
+            }
+        }
+        /*if(move == null)
+        {
+            for (int i = threeInLine.Count; i > 2; i--)
+            {
+                if (threeInLine[i] == 2 && threeInLine[i - 1] == 2 &&
+                    (threeInLine[i - 2] == 2 || threeInLine[i - 2] == 0))
+                {
+                    return move = new FutureMove(i, PShape.Round);
+                }
+            }
+        }*/
+
 
         return null;
     }
-
 }

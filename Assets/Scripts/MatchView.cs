@@ -1,9 +1,9 @@
-﻿/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- *
- * Author: Nuno Fachada
- * */
+﻿/// @file
+/// @brief This file contains the ::MatchView class.
+///
+/// @author Nuno Fachada
+/// @date 2019
+/// @copyright [MPLv2](http://mozilla.org/MPL/2.0/)
 
 using System;
 using System.Text;
@@ -13,29 +13,57 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-// Class responsible for the game UI
+/// <summary>
+/// Script which renders the matches UI.
+/// </summary>
+/// <remarks>
+/// Based on the MVC design pattern, composed in this case by the following
+/// classes:
+/// * *Model* - <see cref="Board"/>.
+/// * *View* - This class.
+/// * *Controller* - <see cref="MatchController"/>.
+/// </remarks>
 public class MatchView : MonoBehaviour
 {
-    [SerializeField] private float lastMoveAnimLen = 1f;
-    [SerializeField] private GameObject whiteRoundPiece = null;
-    [SerializeField] private GameObject whiteSquarePiece = null;
-    [SerializeField] private GameObject redRoundPiece = null;
-    [SerializeField] private GameObject redSquarePiece = null;
-    [SerializeField] private GameObject pole = null;
-    [SerializeField] private GameObject ground = null;
-    [SerializeField] private GameObject arrowButton = null;
-    [SerializeField] private GameObject playerPanel = null;
 
+    // Prefabs required for building the UI
+    private GameObject whiteRoundPiece = null;
+    private GameObject whiteSquarePiece = null;
+    private GameObject redRoundPiece = null;
+    private GameObject redSquarePiece = null;
+    private GameObject pole = null;
+    private GameObject ground = null;
+    private GameObject arrowButton = null;
+    private GameObject playerPanel = null;
+
+    // Reference to the game board
     private Board board;
+
+    // Reference to the match data provider
     private IMatchDataProvider matchData;
+
+    // The shapes selected by each player
     private PShape[] selectedShapes;
+
+    // UI representation of the game board
     private GameObject[,] pieces;
-    private UIArrow[] uiArrows;
-    private GameObject isThinkingCanvas;
+
+    // Buttons/arrows for humans to select their next move
+    private HumanMoveButton[] uiArrows;
+
+    // Last move animation length in seconds
+    private float lastMoveAnimLength;
+
+    // Reference to the UI messages box
     private Text messageBoxText;
 
+    // Queue of messages not yet shown
     private Queue<string> messageQueue;
+
+    // Contains all the messages shown so far
     private StringBuilder messages;
+
+    // Auxiliary variables for positioning the UI elements
     private Vector2 leftPoleBase;
     private float distBtwPoles;
     private float totalHeightForPieces;
@@ -61,6 +89,19 @@ public class MatchView : MonoBehaviour
         // Get reference to the camera
         Camera camera = GameObject.Find("Main Camera").GetComponent<Camera>();
 
+        // /////////////////////////////////// //
+        // Get references to essential prefabs //
+        // /////////////////////////////////// //
+
+        whiteRoundPiece = Resources.Load<GameObject>("Prefabs/PieceWhiteRound");
+        whiteSquarePiece = Resources.Load<GameObject>("Prefabs/PieceWhiteSquare");
+        redRoundPiece = Resources.Load<GameObject>("Prefabs/PieceRedRound");
+        redSquarePiece = Resources.Load<GameObject>("Prefabs/PieceRedSquare");
+        pole = Resources.Load<GameObject>("Prefabs/Pole");
+        ground = Resources.Load<GameObject>("Prefabs/Ground");
+        arrowButton = Resources.Load<GameObject>("Prefabs/ArrowButton");
+        playerPanel = Resources.Load<GameObject>("Prefabs/PlayerPanel");
+
         // //////////////////////////////////////////// //
         // Initialize required variables and coroutines //
         // //////////////////////////////////////////// //
@@ -75,6 +116,9 @@ public class MatchView : MonoBehaviour
         matchData = GetComponentInParent<IMatchDataProvider>();
         board = matchData.Board;
 
+        // Get value of last move animation length in seconds
+        lastMoveAnimLength = matchData.LastMoveAnimLength;
+
         // Both players have the round shapes initially selected by default
         selectedShapes = new PShape[] { PShape.Round, PShape.Round };
 
@@ -86,7 +130,7 @@ public class MatchView : MonoBehaviour
         pieces = new GameObject[board.rows, board.cols];
 
         // Create array for UI arrow script objects
-        uiArrows = new UIArrow[board.cols];
+        uiArrows = new HumanMoveButton[board.cols];
 
         // Instantiate the message queue
         messageQueue = new Queue<string>();
@@ -150,7 +194,7 @@ public class MatchView : MonoBehaviour
             currArrow.name = $"Arrow{c}";
 
             // Keep reference to the UI arrow script
-            uiArrows[c] = currArrow.GetComponent<UIArrow>();
+            uiArrows[c] = currArrow.GetComponent<HumanMoveButton>();
 
             // Set the arrow's column
             uiArrows[c].Column = c;
@@ -313,7 +357,7 @@ public class MatchView : MonoBehaviour
         // Keep track of time which animation started and time that it should
         // end
         float timeStarted = Time.time;
-        float timeToEnd = timeStarted + lastMoveAnimLen;
+        float timeToEnd = timeStarted + lastMoveAnimLength;
         // Get the game object to animate
         GameObject piece = pieces[lastMove.row, lastMove.col];
         // Get the sprite renderer to fade in and out
@@ -324,7 +368,7 @@ public class MatchView : MonoBehaviour
         // Animate while we have time, avoiding sudden breaks in the animation
         while (Time.time < timeToEnd || color.a < 0.95f)
         {
-            color.a = Mathf.Cos(Time.time * Mathf.PI * 2 / lastMoveAnimLen)
+            color.a = Mathf.Cos(Time.time * Mathf.PI * 2 / lastMoveAnimLength)
                 * 1f / 2f + 1f / 2f;
             spriteRenderer.color = color;
 
@@ -419,7 +463,7 @@ public class MatchView : MonoBehaviour
         SelectShape(move.piece.color, move.piece.shape);
 
         // Disable or enable GUI stuff depending on who's playing next
-        foreach (UIArrow arrow in uiArrows)
+        foreach (HumanMoveButton arrow in uiArrows)
         {
             arrow.gameObject.SetActive(
                 !finished && matchData.CurrentPlayer.IsHuman);
@@ -428,7 +472,8 @@ public class MatchView : MonoBehaviour
         // Notify listeners that board was updated
         BoardUpdated.Invoke();
 
-        // If finished and not drawn, draw a line marking the solution
+        // If match is finished and result is not a draw, draw a line marking
+        // the solution
         if (result == Winner.Red || result == Winner.White)
         {
             // The variable where we'll place the line renderer
@@ -480,14 +525,18 @@ public class MatchView : MonoBehaviour
         }
     }
 
-    // Method that invokes event indicating a move was selected via the GUI
+    // Method that invokes event indicating that a move was selected via the UI
     private void OnMoveSelected(int col)
     {
         MoveSelected?.Invoke(
             new FutureMove(col, selectedShapes[(int)board.Turn]));
     }
 
-    // Present a message in the message box
+    /// <summary>
+    /// Submit a message which will be shown in the message box when possible.
+    /// However, message will be shown in the Unity console immediately.
+    /// </summary>
+    /// <param name="str">Message to show in the message box.</param>
     internal void SubmitMessage(string str)
     {
         messageQueue.Enqueue(str);
@@ -497,14 +546,14 @@ public class MatchView : MonoBehaviour
     // Present messages with some delay between them
     private IEnumerator UpdateMessageBox()
     {
-        // This coroutine till be called at least once per AI move
+        // This coroutine will be called at least once per AI move
         YieldInstruction timeAImoves = new WaitForSeconds(
-            matchData.TimeBetweenAIMoves);
+            matchData.MinAIGameMoveTime);
 
         // When there are more messages, the coroutine is called in a tenth
         // of that time, giving the illusion of scrolling
         YieldInstruction minTimMsgs = new WaitForSeconds(
-            matchData.TimeBetweenAIMoves / 10);
+            matchData.MinAIGameMoveTime / 10);
 
         // Enter the infinite loop
         while (true)
@@ -515,10 +564,24 @@ public class MatchView : MonoBehaviour
                 // If so, let's post them
                 while (messageQueue.Count > 0)
                 {
+                    // Maximum message length
+                    int maxMsgLen = 5000;
+                    // The messages to display in the text UI
+                    string messagesToDisplay;
                     // Get message out of the queue and into the string builder
                     messages.Append($"\n- {messageQueue.Dequeue()}");
+                    // If the string is too long, this may cause an exception
+                    // in Unity, so we make sure it isn't
+                    // This is not the best solution, but it works as long as
+                    // the user doesn't want to scroll back to the beginning
+                    // Better solutions here:
+                    // https://stackoverflow.com/questions/40660868/unity-ui-text-with-markup-tags-string-too-long-for-textmeshgenerator
+                    if (messages.Length > maxMsgLen)
+                        messages.Remove(0, messages.Length - maxMsgLen);
+                    // Get the messages to display in string format
+                    messagesToDisplay = messages.ToString();
                     // Update the text UI widget
-                    messageBoxText.text = messages.ToString();
+                    messageBoxText.text = messagesToDisplay;
                     // We'll return in a moment
                     yield return minTimMsgs;
                 }
@@ -541,6 +604,8 @@ public class MatchView : MonoBehaviour
     // Unity event which will be invoked when a shape is selected
     private ColorShapeEvent ShapeSelected;
 
-    // Native C# event which will be invoked when a move is selected
+    /// <summary>
+    /// Native C# event which will be invoked when a move is selected in the UI.
+    /// </summary>
     public event Action<FutureMove> MoveSelected;
 }
