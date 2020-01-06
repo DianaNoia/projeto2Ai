@@ -15,6 +15,21 @@ public class ShootergameAIThinker : IThinker
 
     private List<Pos> enemyPiece = new List<Pos>();
     private List<Pos> myPiece = new List<Pos>();
+    private List<Pos> allPiece = new List<Pos>();
+
+    private Dictionary<FutureMove, int> scores =
+        new Dictionary<FutureMove, int>();
+
+    struct Play
+    {
+        public int? pos { get; set; }
+        public int score { get; set; }
+        public Play(int? pos, int score)
+        {
+            this.pos = pos;
+            this.score = score;
+        }
+    }
 
     public FutureMove Think(Board board, CancellationToken ct)
     {
@@ -22,21 +37,21 @@ public class ShootergameAIThinker : IThinker
         FutureMove move;
         FutureMove? test;
 
-        test = Play(board);
+        test = PlayPiece(board);
         if (test != null)
         {
             Debug.LogWarning("WON VIA SCRIPT");
             return (FutureMove)test;
         }
-        /*for (int x = 0; x < board.cols; x++)
-        {
-            test = CheckColsShape(board, x);
-        }
+        
+        test = new FutureMove((int)Negamax(board, board.Turn).pos,
+                PShape.Round);
+
         if (test != null)
         {
-            Debug.LogWarning("WON VIA SCRIPT");
+            Debug.LogWarning("WON VIA NEGAMAX");
             return (FutureMove)test;
-        }*/
+        }
 
         random = new System.Random();
 
@@ -66,7 +81,7 @@ public class ShootergameAIThinker : IThinker
                 if (ct.IsCancellationRequested) return FutureMove.NoMove;
             }
             while (board.IsColumnFull(lastCol));
-        }
+        }        
 
         if (hasWinCorridors)
         {
@@ -110,6 +125,54 @@ public class ShootergameAIThinker : IThinker
 
         // Return move
         return move;
+    }
+
+    private Play Negamax(Board board, PColor turn)
+    {   
+        Play bestMove = new Play(null, int.MinValue);
+
+        PColor proxTurn =
+            turn == PColor.Red ? PColor.White : PColor.Red;
+
+        PShape shape;
+
+        if (turn == PColor.White)
+        {
+            shape = PShape.Round;
+        }
+        else
+        {
+            shape = PShape.Square;
+        }
+
+        for (int i = 0; i < board.rows - 1; i++)
+        {
+            for(int j = 0; j < board.cols - 1; j++)
+            {
+                int pos = j;
+
+                if (board[i,j] == null)
+                {
+                    Play move;
+
+                    board.DoMove(shape, j);
+
+                    move = Negamax(board, proxTurn);
+
+                    board.DoMove(shape, j);
+
+                    move.score = -move.score;
+
+                    if(move.score > bestMove.score)
+                    {
+                        bestMove.score = move.score;
+                        bestMove.pos = pos;
+                    }
+                }
+            }
+        }
+
+        return bestMove;    
     }
 
     private void Check(Board board)
@@ -158,45 +221,45 @@ public class ShootergameAIThinker : IThinker
                             enemyPiece.Add(pos);
                         }
                     }
+                    foreach (Pos position in allPiece)
+                    {
+                        if (position.col == pos.col && position.row == pos.row)
+                        {
+                            hasPiece = true;
+                        }
+                    }
+
+                    if (!hasPiece)
+                    {
+                        allPiece.Add(pos);
+                    }
                 }
             }
         }
     }
 
-    private FutureMove? Play(Board board)
+    private FutureMove? PlayPiece(Board board)
     {
         FutureMove? move = null;
-        int[] rows = new int[board.rows * board.cols];
-        int[] cols = new int[board.rows * board.cols];
-        int i = 0;
 
-        foreach (Pos pos in myPiece)
+        foreach(Pos pos in allPiece)
         {
-            rows.SetValue(pos.row, i);
-            cols.SetValue(pos.col, i);
-            i++;
-
-        }
-
-        for (int x = 0; x < board.cols; x++)
-        {
-            return CheckCols(board, x);
-        }
-
-        if(move == null)
-        {
-            for (int x = 0; x < board.cols; x++)
+            if(move == null)
             {
-                return CheckColsShape(board, x);
+                move = CheckColsShape(board, pos.col);
             }
         }
-        /*if(move == null)
-        {
-            for (int x = board.rows - 1; x > 0; x--)
+
+       if(move == null)
+       {
+            foreach (Pos pos in allPiece)
             {
-                move = CheckRows(board, x);
+                if (move == null)
+                {
+                    move = CheckCols(board, pos.col);
+                }
             }
-        }*/
+       }
 
         return move;
 
@@ -248,19 +311,13 @@ public class ShootergameAIThinker : IThinker
         {
             shape = PShape.Square;
         }
-        
-
+        Debug.LogWarning($"3 IN LINE COUNT {threeInLine.Count}");
         for (int i = 0; i < board.rows; i++)
         {
             Debug.LogWarning($"3 IN LINE COUNT {threeInLine.Count}");
-            if (board[i, col] == null && threeInLine.Count != 3)
+            if (board[i, col] == null)
             {
                 return null;
-            }
-            else if (board[i, col] == null && (threeInLine.Count == 3))
-            {
-                Debug.LogWarning("RETURNED");
-                return move = new FutureMove(col, shape);
             }
             piece = (Piece)board[i, col];
             if (piece.shape == shape)
@@ -273,7 +330,7 @@ public class ShootergameAIThinker : IThinker
             } 
             if(threeInLine.Count == 3)
             {
-                Debug.LogWarning("RETURNED");
+                Debug.LogWarning($"RETURNED AND COL IS {col}");
                 return move = new FutureMove(col, shape);
             }
         }
@@ -315,18 +372,6 @@ public class ShootergameAIThinker : IThinker
                 return move = new FutureMove(i, PShape.Round);
             }
         }
-        /*if(move == null)
-        {
-            for (int i = threeInLine.Count; i > 2; i--)
-            {
-                if (threeInLine[i] == 2 && threeInLine[i - 1] == 2 &&
-                    (threeInLine[i - 2] == 2 || threeInLine[i - 2] == 0))
-                {
-                    return move = new FutureMove(i, PShape.Round);
-                }
-            }
-        }*/
-
 
         return null;
     }
