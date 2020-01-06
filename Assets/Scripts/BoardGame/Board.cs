@@ -398,6 +398,8 @@ public class Board
         piece = board[pos.col, pos.row].Value;
         board[pos.col, pos.row] = null;
 
+        numberOfPieces[piece] ++;
+
         // Decrement number of moves
         numMoves--;
 
