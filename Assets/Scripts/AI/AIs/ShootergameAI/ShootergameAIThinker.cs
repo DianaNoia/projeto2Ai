@@ -5,11 +5,7 @@ using UnityEngine;
 
 public class ShootergameAIThinker : IThinker
 {
-    private int lastCol = -1;
-
     private List<Pos> positions = new List<Pos>();
-
-    private bool hasWinCorridors;
 
     private System.Random random;
 
@@ -17,10 +13,10 @@ public class ShootergameAIThinker : IThinker
     private List<Pos> myPiece = new List<Pos>();
     private List<Pos> allPiece = new List<Pos>();
 
-    private Dictionary<FutureMove, int> scores =
-        new Dictionary<FutureMove, int>();
-
     private int maxDepth = 2;
+
+    PColor color;
+    PShape shape;
 
     struct Play
     {
@@ -35,13 +31,10 @@ public class ShootergameAIThinker : IThinker
 
     public FutureMove Think(Board board, CancellationToken ct)
     {
-        // The move to perform
-        FutureMove move;
         FutureMove? test;
         Play play;
 
-        PColor color = board.Turn;
-        PShape shape;
+        color = board.Turn;
 
         if (color == PColor.White)
         {
@@ -162,18 +155,7 @@ public class ShootergameAIThinker : IThinker
         PColor proxTurn =
             turn == PColor.Red ? PColor.White : PColor.Red;
 
-        PShape shape;
-
         bool stup = false;
-
-        if (turn == PColor.White)
-        {
-            shape = PShape.Round;
-        }
-        else
-        {
-            shape = PShape.Square;
-        }
 
         if (ct.IsCancellationRequested)
         {
@@ -242,9 +224,6 @@ public class ShootergameAIThinker : IThinker
 
             return bestMove;
         }
-
-        
-
     }
 
     private void Check(Board board)
@@ -372,17 +351,7 @@ public class ShootergameAIThinker : IThinker
         FutureMove? move;
         List<bool> threeInLine = new List<bool>();
         Piece piece;
-        PColor color = board.Turn;
-        PShape shape;
 
-        if (color == PColor.White)
-        {
-            shape = PShape.Round;
-        }
-        else
-        {
-            shape = PShape.Square;
-        }
         for (int i = 0; i < board.rows; i++)
         {
             if (board[i, col] == null)
