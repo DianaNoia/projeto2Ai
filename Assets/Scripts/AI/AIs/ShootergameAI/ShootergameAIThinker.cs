@@ -13,6 +13,8 @@ public class ShootergameAIThinker : IThinker
     private List<Pos> myPiece = new List<Pos>();
     private List<Pos> allPiece = new List<Pos>();
 
+    private bool[] blockCols; 
+
     private int maxDepth = 2;
 
     PColor color;
@@ -33,6 +35,11 @@ public class ShootergameAIThinker : IThinker
     {
         FutureMove? test;
         Play play;
+        random = new System.Random();
+
+        //int i = random.Next(0, 11);
+
+        blockCols = new bool[board.cols];
 
         color = board.Turn;
 
@@ -45,12 +52,22 @@ public class ShootergameAIThinker : IThinker
             shape = PShape.Square;
         }
 
+        Check(board);
+
         test = PlayPiece(board);
         if (test != null)
         {
+            Debug.LogError("Win");
             return (FutureMove)test;
         }
-        
+
+        test = CheckEnemy(board);
+        if (test != null)
+        {
+            Debug.LogError("Stopped Win");
+            return (FutureMove)test;
+        }
+
         play = Negamax(board, board.Turn, maxDepth, ct);
 
         if (test != null)
@@ -61,18 +78,27 @@ public class ShootergameAIThinker : IThinker
             }
             else
             {
+                Debug.LogError("Play with NegaMax");
                 return new FutureMove((int)play.pos, PShape.Round);
             }
         }
 
-        test = CheckWinCorridors(board, shape);
+        if(allPiece.Count % 2 == 0)
+        {
+            test = CheckWinCorridors(board);
+        }
+        else
+        {
+            test = CheckEnemyWinCorridors(board);
+        }
+
+        
 
         if(test != null)
         {
+            Debug.LogError("Play with WinCorridoes");
             return (FutureMove)test;
-        }
-
-        random = new System.Random();
+        }        
 
         int roundPieces = board.PieceCount(board.Turn, PShape.Round);
         int squarePieces = board.PieceCount(board.Turn, PShape.Square);
@@ -81,7 +107,7 @@ public class ShootergameAIThinker : IThinker
         return new FutureMove(random.Next(0, board.cols), shape); 
     }
 
-    private FutureMove? CheckWinCorridors(Board board, PShape myShape)
+    private FutureMove? CheckWinCorridors(Board board)
     {
         Piece piece;
         foreach(IEnumerable<Pos> enumerable in board.winCorridors)
@@ -102,9 +128,9 @@ public class ShootergameAIThinker : IThinker
                     {
                         piece = (Piece)board[pos.row, pos.col + 1];
 
-                        if (piece.color == board.Turn || piece.shape == myShape)
+                        if (piece.color == board.Turn || piece.shape == shape)
                         {
-                            return new FutureMove(pos.col, myShape);
+                            return new FutureMove(pos.col, shape);
                         }
                     }
                     
@@ -114,9 +140,9 @@ public class ShootergameAIThinker : IThinker
                     {
                         piece = (Piece)board[pos.row, pos.col - 1];
 
-                        if (piece.color == board.Turn || piece.shape == myShape)
+                        if (piece.color == board.Turn || piece.shape == shape)
                         {
-                            return new FutureMove(pos.col, myShape);
+                            return new FutureMove(pos.col, shape);
                         }
                     }
                 }
@@ -126,22 +152,95 @@ public class ShootergameAIThinker : IThinker
                     {
                         piece = (Piece)board[pos.row, pos.col + 1];
 
-                        if (piece.color == board.Turn || piece.shape == myShape)
+                        if (piece.color == board.Turn || piece.shape == shape)
                         {
-                            return new FutureMove(pos.col, myShape);
+                            return new FutureMove(pos.col, shape);
                         }
                     }
 
                     if (board[pos.row, pos.col - 1] != null)
                     {
                         piece = (Piece)board[pos.row, pos.col - 1];
-                        if (piece.color == board.Turn || piece.shape == myShape)
+                        if (piece.color == board.Turn || piece.shape == shape)
                         {
-                            return new FutureMove(pos.col, myShape);
+                            return new FutureMove(pos.col, shape);
                         }
                     }
                 }               
                 
+            }
+        }
+
+        return null;
+    }
+
+    private FutureMove? CheckEnemyWinCorridors(Board board)
+    {
+        Piece piece;
+        PColor enemyColor =
+            color == PColor.White ? PColor.Red : PColor.White;
+        PShape enemyShape =
+            shape == PShape.Round ? PShape.Square : PShape.Round;
+
+        foreach (IEnumerable<Pos> enumerable in board.winCorridors)
+        {
+            foreach (Pos pos in enumerable)
+            {
+                positions.Add(pos);
+            }
+        }
+
+        foreach (Pos pos in positions)
+        {
+            if (board[pos.row, pos.col] == null)
+            {
+                if (pos.col == 0)
+                {
+                    if (board[pos.row, pos.col + 1] != null)
+                    {
+                        piece = (Piece)board[pos.row, pos.col + 1];
+
+                        if (piece.color == enemyColor || piece.shape == enemyShape)
+                        {
+                            return new FutureMove(pos.col, shape);
+                        }
+                    }
+
+                }
+                else if (pos.col == board.cols - 1)
+                {
+                    if (board[pos.row, pos.col - 1] != null)
+                    {
+                        piece = (Piece)board[pos.row, pos.col - 1];
+
+                        if (piece.color == enemyColor || piece.shape == enemyShape)
+                        {
+                            return new FutureMove(pos.col, shape);
+                        }
+                    }
+                }
+                else
+                {
+                    if (board[pos.row, pos.col + 1] != null)
+                    {
+                        piece = (Piece)board[pos.row, pos.col + 1];
+
+                        if (piece.color == enemyColor || piece.shape == enemyShape)
+                        {
+                            return new FutureMove(pos.col, shape);
+                        }
+                    }
+
+                    if (board[pos.row, pos.col - 1] != null)
+                    {
+                        piece = (Piece)board[pos.row, pos.col - 1];
+                        if (piece.color == enemyColor || piece.shape == enemyShape)
+                        {
+                            return new FutureMove(pos.col, shape);
+                        }
+                    }
+                }
+
             }
         }
 
@@ -224,7 +323,7 @@ public class ShootergameAIThinker : IThinker
 
             return bestMove;
         }
-    }
+    }    
 
     private void Check(Board board)
     {
@@ -376,59 +475,130 @@ public class ShootergameAIThinker : IThinker
         return move = null;
     }
 
-    private FutureMove? CheckRows(Board board, int row)
+    private FutureMove? CheckEnemy(Board board)
     {
         FutureMove? move = null;
-        List<byte> threeInLine = new List<byte>();
-        Piece piece;
 
-        for (int i = 0; i < board.cols; i++)
+        for(int i = 0; i < blockCols.Length; i++)
         {
-            if (board[row, i] == null)
+            Debug.LogError(blockCols[i]);
+        }
+
+        foreach (Pos pos in allPiece)
+        {
+            if (move == null)
             {
-                threeInLine.Add(0);
+                if(blockCols[pos.col] == false)
+                {
+                    move = CheckEnemyColsShape(board, pos.col);
+                }
+                
+            }
+        }
+
+        if (move == null)
+        {
+            foreach (Pos pos in allPiece)
+            {
+                if (move == null)
+                {
+                    if (blockCols[pos.col] == false)
+                    {
+                        move = CheckEnemyCols(board, pos.col);
+                    }
+                    
+                }
+            }
+        }
+
+        return move;
+    }
+
+    private FutureMove? CheckEnemyCols(Board board, int col)
+    {
+        FutureMove? move;
+        List<bool> threeInLine = new List<bool>(3);
+        Piece piece;
+        PColor enemyColor = color == PColor.White ? PColor.Red: PColor.White;
+
+        for (int i = 0; i < board.rows; i++)
+        {
+            if (board[i, col] == null)
+            {
+                return null;
+            }
+            
+            piece = (Piece)board[i, col];
+            if (piece.color == enemyColor)
+            {
+                threeInLine.Add(true);
             }
             else
             {
-                piece = (Piece)board[row, i];
-                if (piece.color == board.Turn)
+                threeInLine.RemoveRange(0, threeInLine.Count);
+            }
+            if (threeInLine.Count == 3)
+            {
+                if (board[i + 1, col].HasValue || i == board.rows)
                 {
-                    threeInLine.Add(2);
+                    piece = (Piece)board[i + 1, col];
+                    if (piece.shape == shape)
+                    {
+                        threeInLine.RemoveRange(0, threeInLine.Count);
+                    }
                 }
                 else
                 {
-                    threeInLine.Add(1);
+                    return move = new FutureMove(col, shape);
                 }
+                
             }
         }
 
-        for (int i = 0; i < threeInLine.Count; i++)
+        return move = null;
+    }
+
+    private FutureMove? CheckEnemyColsShape(Board board, int col)
+    {
+        FutureMove? move;
+        List<bool> threeInLine = new List<bool>();
+        Piece piece;
+        PShape enemyShape =
+            shape == PShape.Round ? PShape.Square : PShape.Round;
+
+        for (int i = 0; i < board.rows; i++)
         {
-            if(i == 0)
+            if (board[i, col] == null)
             {
-                if(threeInLine[i] == 2 && threeInLine[i + 1] == 2 &&
-                    threeInLine[i + 2] == 2 && threeInLine[i + 3] == 0)
-                {
-                    return move = new FutureMove(i + 3, PShape.Round);
-                }
-            }else if(i == 1)
+                return null;
+            }
+            piece = (Piece)board[i, col];
+            if (piece.shape == enemyShape)
             {
-                if (threeInLine[i] == 2 && threeInLine[i + 1] == 2 &&
-                    threeInLine[i + 2] == 2 && threeInLine[i + 3] == 0)
+                threeInLine.Add(true);
+            }
+            else
+            {
+                threeInLine.RemoveRange(0, threeInLine.Count);
+            }
+            if (threeInLine.Count == 3)
+            {
+                if(board[i + 1, col].HasValue || i == board.rows)
                 {
-                    return move = new FutureMove(i + 3, PShape.Round);
-                }else if (threeInLine[i] == 2 && threeInLine[i + 1] == 2 &&
-                    threeInLine[i + 2] == 2 && threeInLine[i -1] == 0)
-                {
-                    return move = new FutureMove(i - 1, PShape.Round);
-                }else if(threeInLine[i-1] == 2 && threeInLine[i] == 2 &&
-                    threeInLine[i + 1] == 2 && threeInLine[i + 2] == 0)
-                {
-                    return move = new FutureMove(i + 2, PShape.Round);
+                    piece = (Piece)board[i + 1, col];
+                    if(piece.shape == shape)
+                    {
+                        threeInLine.RemoveRange(0, threeInLine.Count);
+                    }
                 }
+                else
+                {
+                    return move = new FutureMove(col, shape);
+                }
+                
             }
         }
 
-        return null;
+        return move = null;
     }
 }
