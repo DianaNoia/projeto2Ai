@@ -66,6 +66,8 @@
     <Compile Include="Assets\Scripts\AI\AIPlayer.cs" />
     <Compile Include="Assets\Scripts\AI\AIs\LoserSleeperAI\LoserSleeperAI.cs" />
     <Compile Include="Assets\Scripts\AI\AIs\LoserSleeperAI\LoserSleeperAIThinker.cs" />
+    <Compile Include="Assets\Scripts\AI\AIs\NoScoreAI\NoScoreAI.cs" />
+    <Compile Include="Assets\Scripts\AI\AIs\NoScoreAI\NoScoreAIThinker.cs" />
     <Compile Include="Assets\Scripts\AI\AIs\PedroAI\G01AITEST.cs" />
     <Compile Include="Assets\Scripts\AI\AIs\PedroAI\G0A1TESTThinker.cs" />
     <Compile Include="Assets\Scripts\AI\AIs\RandomAI\RandomAI.cs" />
