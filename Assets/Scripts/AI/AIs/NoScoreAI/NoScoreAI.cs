@@ -11,6 +11,6 @@ public class NoScoreAI : AIPlayer
     public override void Setup()
     {
         base.Awake();
-        thinker = new ShootergameAIThinker();
+        thinker = new NoScoreAIThinker();
     }
 }
